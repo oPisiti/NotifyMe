@@ -11,7 +11,15 @@ def notify_me():
     parser.add_argument("-f", help="File containing the bot's API and chat's id", type=str)
     args = parser.parse_args()
 
-    user_data = get_data(args.f) if args.f is not None else get_data()
+    # Attempting to read secrets file
+    try:
+        user_data = get_data(args.f) if args.f is not None else get_data()
+    except KeyError as e:
+        print(e)
+        return
+    except FileNotFoundError:
+        print(f'Secrets file not found')
+        return
 
     # Creating url
     message = urllib.parse.quote_plus(args.m)
@@ -41,12 +49,13 @@ def get_data(file_name: str = "secrets.txt") -> dict:
         try:
             field, data = line.split("=")
         except ValueError as e:
-            raise KeyError(f"Line: '{line}' if not formatted in a supported way")
-        user_data[field] = data
+            raise KeyError(f"Line: '{line}' if not formatted in a supported fashion")
+        
+        user_data[field.strip()] = data.strip()
 
     # Checking for required fields
-    if set(user_data.keys()) > set(EXPECTED_FIELDS): 
-        raise KeyError(f"Expected keys: {EXPECTED_FIELDS}. Got: {tuple(user_data.keys())}")
+    if not set(EXPECTED_FIELDS).issubset(set(user_data.keys())): 
+        raise KeyError(f"Required keys: {EXPECTED_FIELDS}. Got: {tuple(user_data.keys())}")
 
     return user_data
 
