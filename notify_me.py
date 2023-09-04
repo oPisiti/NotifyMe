@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
+import os
 import requests
 import urllib.parse
 
@@ -36,6 +37,9 @@ def get_data(file_name: str = "secrets.txt") -> dict:
     Must be in format, one per line:
         - FIELD=Data
     """
+
+    # Getting the full path to the file
+    file_name = os.path.join(os.path.dirname(__file__), file_name) 
 
     EXPECTED_FIELDS = ("API", "CHAT_ID")
 
